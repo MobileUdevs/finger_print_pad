@@ -4,8 +4,8 @@
     <application>
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize|uiMode|layoutDirection"
+            android:configChanges="orientation|keyboardHidden"
             android:resizeableActivity="true"
-            android:supportsPictureInPicture="true" />
+            android:screenOrientation="landscape" />
     </application>
 </manifest>
