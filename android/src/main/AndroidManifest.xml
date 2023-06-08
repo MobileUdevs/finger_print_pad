@@ -1,1 +1,11 @@
-<manifest package="uz.udevs.finger_print_pad" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="uz.udevs.finger_print_pad">
+
+    <application>
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize|uiMode|layoutDirection"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true" />
+    </application>
+</manifest>

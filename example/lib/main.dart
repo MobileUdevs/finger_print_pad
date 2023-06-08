@@ -62,6 +62,12 @@ class _MyAppState extends State<MyApp> {
             ),
             ElevatedButton(
               onPressed: () async {
+                await _fingerPrintPadPlugin.scanFinger();
+              },
+              child: const Text('ScanFinger'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
                 await _fingerPrintPadPlugin.closeDevice();
               },
               child: const Text('closeDevice'),

@@ -48,4 +48,9 @@ class MethodChannelFingerPrintPad extends FingerPrintPadPlatform {
   Future<void> compareFinger() async {
     await methodChannel.invokeMethod<void>('compareFinger');
   }
+
+  @override
+  Future<void> scanFinger() async {
+    await methodChannel.invokeMethod<void>('scanFinger');
+  }
 }

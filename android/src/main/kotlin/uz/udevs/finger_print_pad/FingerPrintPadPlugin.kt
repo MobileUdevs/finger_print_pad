@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
@@ -44,8 +43,12 @@ class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     override fun onMethodCall(call: MethodCall, result: Result) {
         resultMethod = result
         when (call.method) {
+            "scanFinger" -> {
+                val intent = Intent(activity, MainActivity::class.java)
+                activity.startActivity(intent)
+            }
+
             "init" -> {
-                print("initinitinit")
                 init()
             }
 

@@ -47,4 +47,8 @@ abstract class FingerPrintPadPlatform extends PlatformInterface {
   Future<void> compareFinger() {
     throw UnimplementedError('CompareFinger has not been implemented.');
   }
+
+  Future<void> scanFinger() {
+    throw UnimplementedError('CompareFinger has not been implemented.');
+  }
 }

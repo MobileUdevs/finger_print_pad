@@ -26,4 +26,8 @@ final class FingerPrintPad {
   Future<void> compareFinger() {
     return FingerPrintPadPlatform.instance.compareFinger();
   }
+
+  Future<void> scanFinger() {
+    return FingerPrintPadPlatform.instance.scanFinger();
+  }
 }
