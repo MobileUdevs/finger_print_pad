@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:finger_print_pad/finger_print_pad.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  FingerPrintPad.instance.init();
   runApp(const MyApp());
 }
 
@@ -18,8 +20,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   File? imageFile;
   bool init = false;
+  String? fingerPrint;
   final String _platformVersion = 'Unknown';
-  final _fingerPrintPadPlugin = FingerPrintPad();
+  final _fingerPrintPadPlugin = FingerPrintPad.instance;
 
   @override
   void initState() {
@@ -44,19 +47,16 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Column(
+        body: ListView(
           children: [
-            Text('Running on: $_platformVersion\n'),
+            Text('Running on: $fingerPrint'),
             imageFile == null
                 ? const Text('No image selected.')
                 : Image.file(imageFile!),
             init == true ? const Text('init') : const Text('not init'),
             ElevatedButton(
               onPressed: () async {
-                var init = await _fingerPrintPadPlugin.openDevice();
-                setState(() {
-                  init = init;
-                });
+                await _fingerPrintPadPlugin.openDevice();
               },
               child: const Text('openDevice'),
             ),
@@ -70,13 +70,13 @@ class _MyAppState extends State<MyApp> {
               onPressed: () async {
                 final image =
                     await _fingerPrintPadPlugin.captureAndSaveFinger();
-                if (image != null) {
-                  setState(
-                    () {
-                      imageFile = File.fromRawPath(image);
-                    },
-                  );
-                }
+                // if (image == null) return;
+                setState(
+                  () {
+                    fingerPrint = image;
+                    // imageFile = File.fromRawPath(image);
+                  },
+                );
               },
               child: const Text('captureAndSaveFinger'),
             ),

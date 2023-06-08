@@ -2,7 +2,11 @@ import 'package:flutter/services.dart';
 
 import 'finger_print_pad_platform_interface.dart';
 
-class FingerPrintPad {
+final class FingerPrintPad {
+  FingerPrintPad._();
+
+  static FingerPrintPad get instance => FingerPrintPad._();
+
   Future<void> init() {
     return FingerPrintPadPlatform.instance.init();
   }
@@ -15,7 +19,7 @@ class FingerPrintPad {
     return FingerPrintPadPlatform.instance.closeDevice();
   }
 
-  Future<Uint8List?> captureAndSaveFinger() {
+  Future<String?> captureAndSaveFinger() {
     return FingerPrintPadPlatform.instance.captureAndSaveFinger();
   }
 

@@ -40,7 +40,7 @@ abstract class FingerPrintPadPlatform extends PlatformInterface {
     throw UnimplementedError('closeDevice has not been implemented.');
   }
 
-  Future<Uint8List?> captureAndSaveFinger() {
+  Future<String?> captureAndSaveFinger() {
     throw UnimplementedError('captureAndSaveFinger has not been implemented.');
   }
 

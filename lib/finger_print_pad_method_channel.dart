@@ -40,8 +40,8 @@ class MethodChannelFingerPrintPad extends FingerPrintPadPlatform {
   }
 
   @override
-  Future<Uint8List?> captureAndSaveFinger() async {
-    return await methodChannel.invokeMethod<Uint8List>('saveFinger');
+  Future<String?> captureAndSaveFinger() async {
+    return await methodChannel.invokeMethod<String?>('saveFinger');
   }
 
   @override
