@@ -83,9 +83,7 @@ class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         fingerprintC = FingerprintC_FBI.getInstance(activity)
         val isSuccess = fingerprintC.openDevice()
         Toast.makeText(
-            activity,
-            if (isSuccess) "Success" else "Failed",
-            Toast.LENGTH_SHORT
+            activity, if (isSuccess) "Success" else "Failed", Toast.LENGTH_SHORT
         ).show()
         return isSuccess
     }
@@ -95,12 +93,9 @@ class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     }
 
     private fun saveFinger(): ByteArray {
-        val captureFingerResult =
-            fingerprintC.capture(5 * 1000)
+        val captureFingerResult = fingerprintC.capture(5 * 1000)
         val mBitmap: Bitmap = FingerprintC_FBI.GetBitmapFromRaw(
-            captureFingerResult.imageData,
-            captureFingerResult.width,
-            captureFingerResult.height
+            captureFingerResult.imageData, captureFingerResult.width, captureFingerResult.height
         )
         return bitmapToByteArray(mBitmap)
     }
@@ -124,19 +119,6 @@ class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     fun compareFinger() {
         val captureFingerResult = fingerprintC.capture(5 * 1000)
 
-        // an error occurred
-//        if (captureFingerResult == null) {
-////        runOnUiThread { tvInfo.text = "Collect failed" }
-//            return@Runnable
-//        }
-
-        // save bitmap image locally
-//      mBitmap = FingerprintC_FBI.GetBitmapFromRaw(
-//        captureFingerResult.imageData,
-//        captureFingerResult.width,
-//        captureFingerResult.height
-//      )
-//      runOnUiThread { imageView.setImageBitmap(mBitmap) }
         val dir = File(Environment.getExternalStorageDirectory(), "FBI")
         if (!dir.exists()) {
             dir.mkdir()
@@ -146,24 +128,15 @@ class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         if (list != null && list.isNotEmpty()) {
             for (f in list) {
                 val feature = FileOperate.getData(f)
-                val isSuccess =
-                    fingerprintC.compare(captureFingerResult.featureData, feature)
+                val isSuccess = fingerprintC.compare(captureFingerResult.featureData, feature)
                 Log.d("mine", "isSuccess-->$isSuccess")
                 if (isSuccess) {
                     isFind = true
-//            runOnUiThread { tvInfo.text = "Compare success" }
                     break
                 }
             }
-            if (!isFind) {
-//          runOnUiThread {
-//            runOnUiThread {
-//              tvInfo.text = "Not Found"
-//            }
-//          }
-            }
         } else {
-//        runOnUiThread { tvInfo.text = "No finger Templete" }
+            Toast.makeText(activity, "No finger", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -178,7 +151,6 @@ class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
-//        activity.closeContextMenu()
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -186,7 +158,6 @@ class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     }
 
     override fun onDetachedFromActivity() {
-//        activity = null
     }
 
     override fun onNewIntent(intent: Intent): Boolean {
@@ -194,6 +165,6 @@ class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 }

@@ -15,13 +15,13 @@ import java.util.List;
  */
 
 public class FileOperate {
-    
+
     public static boolean addData(byte[] data) {
         File dir = new File(Environment.getExternalStorageDirectory(), "FBI");
         if (!dir.exists()) {
             dir.mkdir();
         }
-        
+
         File file = new File(dir, System.currentTimeMillis() + "");
         if (!file.exists()) {
             try {
@@ -31,7 +31,7 @@ public class FileOperate {
                 return false;
             }
         }
-        
+
         FileOutputStream fileOutputStream = null;
         try {
             fileOutputStream = new FileOutputStream(file);
@@ -46,8 +46,8 @@ public class FileOperate {
         }
         return false;
     }
-    
-    
+
+
     public static byte[] getData(File file) {
         if (file != null && file.exists()) {
             try {
@@ -64,7 +64,7 @@ public class FileOperate {
         }
         return null;
     }
-    
+
     public static List<byte[]> getAllData() {
         File dir = new File(Environment.getExternalStorageDirectory(), "FBI");
         if (!dir.exists()) {
@@ -80,5 +80,5 @@ public class FileOperate {
         }
         return null;
     }
-    
+
 }
