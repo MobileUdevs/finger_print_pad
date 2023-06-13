@@ -1,3 +1,4 @@
+import 'package:finger_print_pad/finger_model.dart';
 import 'package:flutter/services.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -48,7 +49,9 @@ abstract class FingerPrintPadPlatform extends PlatformInterface {
     throw UnimplementedError('CompareFinger has not been implemented.');
   }
 
-  Future<void> scanFinger() {
+  Future<String?> scanFinger({
+    required String model,
+  }) {
     throw UnimplementedError('CompareFinger has not been implemented.');
   }
 }

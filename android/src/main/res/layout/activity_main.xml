@@ -53,11 +53,11 @@
             android:text="@string/capture_save_finger"
             tools:ignore="UsingOnClickInXml" />
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="clickCompareFinger"
-            android:text="@string/compare_finger" />
+        <!--        <Button-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:onClick="clickCompareFinger"-->
+        <!--            android:text="@string/compare_finger" />-->
 
         <TextView
             android:id="@+id/tv_info"
@@ -71,8 +71,19 @@
             android:layout_gravity="center"
             android:layout_marginTop="10dp"
             android:gravity="center"
-            android:onClick="clickBack"
-            android:text="OK" />
+            android:onClick="uploadFile"
+            android:text="Barmoq izi yuborish"
+            tools:ignore="HardcodedText" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:onClick="onBackPressed"
+            android:text="Orqaga qaytish"
+            tools:ignore="HardcodedText" />
     </LinearLayout>
 
 

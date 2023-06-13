@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'finger_model.dart';
 import 'finger_print_pad_platform_interface.dart';
 
 /// An implementation of [FingerPrintPadPlatform] that uses method channels.
@@ -50,7 +53,12 @@ class MethodChannelFingerPrintPad extends FingerPrintPadPlatform {
   }
 
   @override
-  Future<void> scanFinger() async {
-    await methodChannel.invokeMethod<void>('scanFinger');
+  Future<String?> scanFinger({
+    required String model,
+  }) async {
+    return await methodChannel.invokeMethod<String>(
+      'scanFinger',
+      <String, String>{'model': model},
+    );
   }
 }

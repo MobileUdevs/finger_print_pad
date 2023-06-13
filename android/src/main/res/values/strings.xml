@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">FingerprintModelCDemo_FBI</string>
-    <string name="open_device">Open Device</string>
-    <string name="close_device">Close Device</string>
-    <string name="capture_save_finger">Capture and Save Finger</string>
+    <string name="open_device">Qurilmani ochish</string>
+    <string name="close_device">Qurilmani yopish</string>
+    <string name="capture_save_finger">Barmoq izini olish</string>
     <string name="compare_finger">Compare Finger</string>
 </resources>

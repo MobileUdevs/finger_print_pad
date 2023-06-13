@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:finger_print_pad/finger_model.dart';
 import 'package:finger_print_pad/finger_print_pad.dart';
 import 'package:flutter/material.dart';
 
@@ -54,43 +55,23 @@ class _MyAppState extends State<MyApp> {
                 ? const Text('No image selected.')
                 : Image.file(imageFile!),
             init == true ? const Text('init') : const Text('not init'),
-            ElevatedButton(
-              onPressed: () async {
-                await _fingerPrintPadPlugin.openDevice();
-              },
-              child: const Text('openDevice'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await _fingerPrintPadPlugin.scanFinger();
-              },
-              child: const Text('ScanFinger'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await _fingerPrintPadPlugin.closeDevice();
-              },
-              child: const Text('closeDevice'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final image =
-                    await _fingerPrintPadPlugin.captureAndSaveFinger();
-                // if (image == null) return;
-                setState(
-                  () {
-                    fingerPrint = image;
-                    // imageFile = File.fromRawPath(image);
-                  },
-                );
-              },
-              child: const Text('captureAndSaveFinger'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await _fingerPrintPadPlugin.compareFinger();
-              },
-              child: const Text('compareFinger'),
+            SafeArea(
+              minimum: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: () async {
+                  await _fingerPrintPadPlugin.scanFinger(
+                    FingerModel(
+                      token: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vdGVzdC1uYXpvcmF0LmthZGFzdHIudXovYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE2ODY2Njc2MDQsImV4cCI6MTY4NjY3NDgwNCwibmJmIjoxNjg2NjY3NjA0LCJqdGkiOiJrT2V3S0NsWkd3NjVyNWpYIiwic3ViIjoiMTY2NiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.MI1w4-lRhMUc_d4ULdHA_LF8tjZJhXBkUZBh6bCiC0E",
+                      key: 'fingerprint',
+                      taskId: "59869",
+                      baseUrl: "https://test-nazorat.kadastr.uz/",
+                    ),
+                  ).then((value) {
+
+                  });
+                },
+                child: const Text('Scan Finger'),
+              ),
             ),
           ],
         ),

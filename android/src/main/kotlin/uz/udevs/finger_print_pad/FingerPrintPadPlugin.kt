@@ -1,14 +1,10 @@
 package uz.udevs.finger_print_pad
 
-
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
-import android.os.Environment
-import android.util.Log
 import android.widget.Toast
-import com.senter.function.openapi.unstable.FingerprintC_FBI
+import com.google.gson.Gson
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -18,12 +14,12 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
-import java.io.BufferedOutputStream
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
+import uz.udevs.finger_print_pad.model.FingerModel
 
+
+const val EXTRA_ARGUMENT = "uz.udevs.finger_print_pad.ARGUMENT"
+const val FINGER_ACTIVITY = 111
+const val FINGER_ACTIVITY_FINISH = 222
 
 /** FingerPrintPadPlugin */
 class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
@@ -33,7 +29,6 @@ class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     private lateinit var activity: Activity
     private lateinit var resultMethod: Result
 
-    private lateinit var fingerprintC: FingerprintC_FBI
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "finger_print_pad")
@@ -44,26 +39,39 @@ class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         resultMethod = result
         when (call.method) {
             "scanFinger" -> {
-                val intent = Intent(activity, MainActivity::class.java)
-                activity.startActivity(intent)
+                print("scanFinger")
+                print(call.arguments)
+                if (!call.hasArgument("model")) {
+                    Toast.makeText(activity, "Model is null", Toast.LENGTH_LONG).show();
+                    result.error("Error", "Model is null", null)
+                    return
+                } else if (call.hasArgument("model")) {
+                    val fingerModel = call.argument("model") as String?
+                    val gson = Gson()
+                    val config =
+                        gson.fromJson(fingerModel, FingerModel::class.java)
+                    val intent = Intent(activity, MainActivity::class.java)
+                    intent.putExtra(EXTRA_ARGUMENT, config)
+                    activity.startActivityForResult(intent, FINGER_ACTIVITY)
+                }
             }
 
             "init" -> {
-                init()
+//                init()
             }
 
             "openDevice" -> {
-                result.success(openDevice())
+//                result.success(openDevice())
             }
 
             "closeDevice" -> {
-                closeDevice()
+//                closeDevice()
             }
 
             "saveFinger" -> {
-                val byte = saveFinger()
-                Toast.makeText(activity, "$byte", Toast.LENGTH_LONG).show()
-                resultMethod.success("$byte")
+//                val byte = saveFinger()
+//                Toast.makeText(activity, "$byte", Toast.LENGTH_LONG).show()
+//                resultMethod.success("$byte")
             }
 
             "compareFinger" -> compareFinger()
@@ -74,70 +82,61 @@ class FingerPrintPadPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
 
 
     private fun init() {
-        fingerprintC = FingerprintC_FBI.getInstance(activity)
-        fingerprintC.init()
+//        fingerprintC = FingerprintC_FBI.getInstance(activity)
+//        fingerprintC.init()
     }
 
 
-    private fun openDevice(): Boolean {
-        fingerprintC = FingerprintC_FBI.getInstance(activity)
-        val isSuccess = fingerprintC.openDevice()
-        Toast.makeText(
-            activity, if (isSuccess) "Success" else "Failed", Toast.LENGTH_SHORT
-        ).show()
-        return isSuccess
-    }
+//    private fun openDevice(): Boolean {
+//        fingerprintC = FingerprintC_FBI.getInstance(activity)
+//        val isSuccess = fingerprintC.openDevice()
+//        Toast.makeText(
+//            activity, if (isSuccess) "Success" else "Failed", Toast.LENGTH_SHORT
+//        ).show()
+//        return isSuccess
+//    }
 
     private fun closeDevice() {
-        fingerprintC.closeDevice()
+//        fingerprintC.closeDevice()
     }
 
-    private fun saveFinger(): ByteArray {
-        val captureFingerResult = fingerprintC.capture(5 * 1000)
-        val mBitmap: Bitmap = FingerprintC_FBI.GetBitmapFromRaw(
-            captureFingerResult.imageData, captureFingerResult.width, captureFingerResult.height
-        )
-        return bitmapToByteArray(mBitmap)
-    }
+//    private fun saveFinger(): ByteArray {
+//        val captureFingerResult = fingerprintC.capture(5 * 1000)
+//        val mBitmap: Bitmap = FingerprintC_FBI.GetBitmapFromRaw(
+//            captureFingerResult.imageData, captureFingerResult.width, captureFingerResult.height
+//        )
+//        return bitmapToByteArray(mBitmap)
+//    }
 
-    private fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
-        val stream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-        return stream.toByteArray()
-    }
-
-    private fun bitmapToFile(bitmap: Bitmap): File {
-        val sd = Environment.getExternalStorageDirectory()
-        val file: File = File(sd, "image.png")
-        val os: OutputStream = BufferedOutputStream(FileOutputStream(file))
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os)
-        os.close()
-        return file
-    }
+//    private fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
+//        val stream = ByteArrayOutputStream()
+//        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+//        return stream.toByteArray()
+//    }
 
     @SuppressLint("SetTextI18n")
     fun compareFinger() {
-        val captureFingerResult = fingerprintC.capture(5 * 1000)
-
-        val dir = File(Environment.getExternalStorageDirectory(), "FBI")
-        if (!dir.exists()) {
-            dir.mkdir()
-        }
-        val list = dir.listFiles()
-        var isFind = false
-        if (list != null && list.isNotEmpty()) {
-            for (f in list) {
-                val feature = FileOperate.getData(f)
-                val isSuccess = fingerprintC.compare(captureFingerResult.featureData, feature)
-                Log.d("mine", "isSuccess-->$isSuccess")
-                if (isSuccess) {
-                    isFind = true
-                    break
-                }
-            }
-        } else {
-            Toast.makeText(activity, "No finger", Toast.LENGTH_SHORT).show()
-        }
+//        val captureFingerResult = fingerprintC.capture(5 * 1000)
+//
+//        val dir = File(Environment.getExternalStorageDirectory(), "FBI")
+//        if (!dir.exists()) {
+//            dir.mkdir()
+//        }
+//        val list = dir.listFiles()
+//        var isFind = false
+//        if (list != null && list.isNotEmpty()) {
+//            for (f in list) {
+//                val feature = FileOperate.getData(f)
+//                val isSuccess = fingerprintC.compare(captureFingerResult.featureData, feature)
+//                Log.d("mine", "isSuccess-->$isSuccess")
+//                if (isSuccess) {
+//                    isFind = true
+//                    break
+//                }
+//            }
+//        } else {
+//            Toast.makeText(activity, "No finger", Toast.LENGTH_SHORT).show()
+//        }
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {

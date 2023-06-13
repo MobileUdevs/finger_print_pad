@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath 'com.android.tools.build:gradle:7.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -23,9 +23,10 @@ allprojects {
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -41,15 +42,20 @@ android {
         test.java.srcDirs += 'src/test/kotlin'
         main {
             jniLibs.srcDirs = ['src/main/jniLibs']
+            res {
+                srcDirs 'src\\main\\res'
+            }
         }
     }
 
     defaultConfig {
         minSdkVersion 21
+        targetSdkVersion 33
         ndk {
             //noinspection ChromeOsAbiSupport
             abiFilters 'armeabi-v7a', 'arm64-v8a'
         }
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     dependencies {
@@ -59,6 +65,13 @@ android {
         implementation files('libs/SenterOpenApi_IoT_1.2.3.106_Function_FingerprintModelC_FBI.jar')
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'org.mockito:mockito-core:5.1.1'
+
+        // gson
+        implementation 'com.google.code.gson:gson:2.9.1'
+        // retrofit
+        implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+        implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+        implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
     }
 
     testOptions {

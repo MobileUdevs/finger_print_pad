@@ -1,8 +1,11 @@
 package uz.udevs.finger_print_pad
 
+import com.senter.function.openapi.unstable.FingerprintC_FBI
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -10,8 +13,23 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import com.senter.function.openapi.unstable.FingerprintC_FBI
+import androidx.annotation.RequiresApi
+import okhttp3.MultipartBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import uz.udevs.finger_print_pad.model.FingerModel
+import uz.udevs.finger_print_pad.retrofit.Common
+import uz.udevs.finger_print_pad.retrofit.RetrofitService
 import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
+import java.util.Date
+
 
 class MainActivity : Activity() {
 
@@ -20,21 +38,72 @@ class MainActivity : Activity() {
     private lateinit var tvInfo: TextView
     private lateinit var imageView: ImageView
 
+    private lateinit var fingerModel: FingerModel
+    private var retrofitService: RetrofitService? = null
+
     private var mBitmap: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        actionBar?.hide()
         setContentView(R.layout.activity_main)
+        actionBar?.hide()
+
+        fingerModel = intent.getSerializableExtra(EXTRA_ARGUMENT) as FingerModel
+        mBitmap = BitmapFactory.decodeResource(
+            applicationContext.resources,
+            R.drawable.fingerprint
+        );
+
         imageView = findViewById(R.id.imageView)
         tvInfo = findViewById(R.id.tv_info)
-        fingerprintC = FingerprintC_FBI.getInstance(this)
-        fingerprintC.init()
+        try {
+            fingerprintC = FingerprintC_FBI.getInstance(this)
+            fingerprintC.init()
+        } catch (e: Exception) {
+            print(e)
+        }
+
+        retrofitService =
+            if (fingerModel.baseUrl.isNotEmpty()) Common.retrofitService(fingerModel.baseUrl) else null
+
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        fingerprintC.uninit()
+        try {
+            fingerprintC.uninit()
+        } catch (e: Exception) {
+            print(e)
+        }
+    }
+
+    private fun uploadFile(file: File) {
+        val requestFile = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+        val body = MultipartBody.Part.createFormData("fingerprint", file.name, requestFile)
+        retrofitService?.uploadFile(
+            fingerModel.token,
+            fingerModel.taskId.toRequestBody(MultipartBody.FORM),
+            fingerModel.key.toRequestBody(MultipartBody.FORM),
+            body,
+        )?.enqueue(object : Callback<ResponseBody> {
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.e("TAG", "onFailure: ", t)
+                Toast.makeText(
+                    this@MainActivity, "Failed Image Upload", Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                Log.e("TAG", "onResponse: ${response.body()?.string()}")
+                Toast.makeText(
+                    this@MainActivity,
+                    "Success Image Upload ${response.body()?.string()}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+            }
+        })
+
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -43,9 +112,7 @@ class MainActivity : Activity() {
             val isSuccess = fingerprintC.openDevice()
             runOnUiThread {
                 Toast.makeText(
-                    this@MainActivity,
-                    if (isSuccess) "Success" else "Failed",
-                    Toast.LENGTH_SHORT
+                    this@MainActivity, if (isSuccess) "Success" else "Failed", Toast.LENGTH_SHORT
                 ).show()
             }
         }.start()
@@ -57,38 +124,67 @@ class MainActivity : Activity() {
     }
 
     @Suppress("UNUSED_PARAMETER")
-    fun clickBack(view: View) {
+    fun uploadFile(view: View) {
+        try {
+            if (mBitmap == null) return
+            persistImage(mBitmap!!)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error ${e.printStackTrace()}", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun onBackPressed(view: View) {
         finish()
         super.onBackPressed()
+    }
+
+    private fun persistImage(bitmap: Bitmap) {
+        val filesDir: File = applicationContext.filesDir
+        val date = Date()
+        val imageFile = File(filesDir, "finger${date.time}.jpg")
+        val os: OutputStream
+        try {
+            os = FileOutputStream(imageFile)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os)
+            os.flush()
+            os.close()
+            if (imageFile.exists()) {
+                uploadFile(file = imageFile)
+            } else {
+                Toast.makeText(this, "File not exists", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: java.lang.Exception) {
+            Toast.makeText(this, "Error file ${e.printStackTrace()}", Toast.LENGTH_SHORT).show()
+            Log.e(javaClass.simpleName, "Error writing bitmap", e)
+        }
     }
 
     @Suppress("UNUSED_PARAMETER")
     @SuppressLint("SetTextI18n")
     fun clickSaveFinger(view: View) {
         Thread(Runnable {
-            runOnUiThread { tvInfo.text = "Input finger" }
+            runOnUiThread { tvInfo.text = "Barmoq izi kiritish" }
             val captureFingerResult = fingerprintC.capture(5 * 1000)
 
             // an error occurred
             if (captureFingerResult == null) {
-                runOnUiThread { tvInfo.text = "Collect failed" }
+                runOnUiThread { tvInfo.text = "Olib bo‘lmadi" }
                 return@Runnable
             }
 
             // save bitmap image locally
             mBitmap = FingerprintC_FBI.GetBitmapFromRaw(
-                captureFingerResult.imageData,
-                captureFingerResult.width,
-                captureFingerResult.height
+                captureFingerResult.imageData, captureFingerResult.width, captureFingerResult.height
             )
             runOnUiThread {
                 imageView.setImageBitmap(mBitmap)
-                //保存至文件中
                 val isSuccess = FileOperate.addData(captureFingerResult.featureData)
                 if (isSuccess) {
-                    tvInfo.text = "Save success"
+                    tvInfo.text = "Mufaqiyatli saqlandi"
                 } else {
-                    tvInfo.text = "Save failed"
+                    tvInfo.text = "Saqlanmadi"
                 }
             }
         }).start()
@@ -98,7 +194,7 @@ class MainActivity : Activity() {
     @SuppressLint("SetTextI18n")
     fun clickCompareFinger(view: View) {
         Thread(Runnable {
-            runOnUiThread { tvInfo.text = "Input finger" }
+            runOnUiThread { tvInfo.text = "Barmoq izini kiriting" }
             val captureFingerResult = fingerprintC.capture(5 * 1000)
 
             // an error occurred
@@ -109,13 +205,10 @@ class MainActivity : Activity() {
 
             // save bitmap image locally
             mBitmap = FingerprintC_FBI.GetBitmapFromRaw(
-                captureFingerResult.imageData,
-                captureFingerResult.width,
-                captureFingerResult.height
+                captureFingerResult.imageData, captureFingerResult.width, captureFingerResult.height
             )
             runOnUiThread { imageView.setImageBitmap(mBitmap) }
-            val dir =
-                File(Environment.getExternalStorageDirectory(), "FBI")
+            val dir = File(Environment.getExternalStorageDirectory(), "FBI")
             if (!dir.exists()) {
                 dir.mkdir()
             }
@@ -124,24 +217,23 @@ class MainActivity : Activity() {
             if (list != null && list.isNotEmpty()) {
                 for (f in list) {
                     val feature = FileOperate.getData(f)
-                    val isSuccess =
-                        fingerprintC.compare(captureFingerResult.featureData, feature)
+                    val isSuccess = fingerprintC.compare(captureFingerResult.featureData, feature)
                     Log.d("mine", "isSuccess-->$isSuccess")
                     if (isSuccess) {
                         isFind = true
-                        runOnUiThread { tvInfo.text = "Compare success" }
+                        runOnUiThread { tvInfo.text = "Barmoq izi olindi" }
                         break
                     }
                 }
                 if (!isFind) {
                     runOnUiThread {
                         runOnUiThread {
-                            tvInfo.text = "Not Found"
+                            tvInfo.text = "Topilmadi"
                         }
                     }
                 }
             } else {
-                runOnUiThread { tvInfo.text = "No finger Templete" }
+                runOnUiThread { tvInfo.text = "Barmoq izi topilmadi" }
             }
         }).start()
     }
